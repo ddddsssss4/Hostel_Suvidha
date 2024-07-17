@@ -102,5 +102,10 @@ const loginStudent=asyncHandler(async(req,res)=>{
 
 })
 
+const changePassword=asyncHandler(async(req,res)=>{
+    //take the student from the middleware 
+    
+})
+
 
 export {registerStudent,loginStudent}

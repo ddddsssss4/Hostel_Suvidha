@@ -11,7 +11,7 @@ const newComplaint=asyncHandler(async(req,res)=>{
         throw new ApiError(400,"Enter the title and description");
     }
 
-    const validComplaintTypes = ['Electronic', 'Furniture', 'Washroom', 'RoomService', 'Desciplinary', 'Wifi'];
+    const validComplaintTypes = ['Electronic', 'Furniture', 'Washroom', 'RoomService', 'Desciplinary'];
     if (!validComplaintTypes.includes(complaintType)) {
         throw new ApiError(400, "Invalid complaint type");
     }
