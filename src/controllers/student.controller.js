@@ -102,10 +102,37 @@ const loginStudent=asyncHandler(async(req,res)=>{
 
 })
 
-const changePassword=asyncHandler(async(req,res)=>{
-    //take the student from the middleware 
-    
-})
+const changePassword = asyncHandler(async (req, res) => {
+    const student = req.student; // Retrieved from the middleware
+    const { currentPassword, newPassword, confirmNewPassword } = req.body;
+
+    // Validate the input
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+        throw new ApiError(400, "All fields are required");
+    }
+
+    if (newPassword !== confirmNewPassword) {
+        throw new ApiError(400, "New password and confirm new password do not match");
+    }
+
+    const studentDoc = await Student.findById(student._id).select('+password');
+
+    if (!studentDoc) {
+        throw new ApiError(404, "Student not found");
+    }
+
+    // Check if the current password is correct
+    const isPasswordCorrect = await studentDoc.isPasswordCorrect(currentPassword);
+    if (!isPasswordCorrect) {
+        throw new ApiError(401, "Current password is incorrect");
+    }
+
+    // Update the password
+    studentDoc.password = newPassword;
+    await studentDoc.save();
+    res.status(200).json(new ApiResponse(200, null, "Password changed successfully"));
+
+});
 
 
-export {registerStudent,loginStudent}
+export {registerStudent,loginStudent,changePassword}
