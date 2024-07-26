@@ -4,6 +4,7 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 import { ApiError } from "../utils/ApiError.js";
 import { Student } from "../models/student.models.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { Complaint } from "../models/complaints.models.js";
 
 //register form is required by the developer to add the student in the databse easily as we will not give the user to register on the apploication it is only login
 const registerStudent=asyncHandler(async(req,res)=>{
@@ -134,5 +135,14 @@ const changePassword = asyncHandler(async (req, res) => {
 
 });
 
+const getComplaints=asyncHandler(async(req,res)=>{
+    const student=req.student;
+    const complaints=await Complaint.find({submittedBy:student._id});
+    if(!complaints){
+        return res.status(200).json(new ApiResponse(200,[],"No complaints Submitted!"));
+    }
+    return res.status(200).json(new ApiResponse(200,complaints,"Complaints Fetched Successfully!"));
 
-export {registerStudent,loginStudent,changePassword}
+});
+
+export {registerStudent,loginStudent,changePassword,getComplaints}

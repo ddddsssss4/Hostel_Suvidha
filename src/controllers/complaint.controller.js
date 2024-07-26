@@ -7,7 +7,7 @@ const newComplaint=asyncHandler(async(req,res)=>{
     //take the user details and the other details 
     //and just create a new complaint 
     const {title,description,complaintType}=req.body;
-    if(!title||!description||!complaintType){
+    if(!title&&!description&&!complaintType){
         throw new ApiError(400,"Enter the title and description");
     }
 
