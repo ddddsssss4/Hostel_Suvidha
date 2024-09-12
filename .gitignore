@@ -90,3 +90,5 @@ public/
 # Optional VS Code directories and files
 .vscode/
 *.code-workspace
+
+.env
