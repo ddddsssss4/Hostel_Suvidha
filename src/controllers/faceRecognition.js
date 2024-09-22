@@ -6,6 +6,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { Student } from '../models/student.models.js';
 import StudentGateLog from '../models/studentGateLog.models.js';
+import { AllGateLogs } from '../models/allGateLog.models.js';
 const verifyFaces=asyncHandler(async(req,res)=>{
     const image1Path = req.files.image1[0].path;
     
@@ -21,15 +22,21 @@ const verifyFaces=asyncHandler(async(req,res)=>{
         if(!student){
             throw new ApiError(404,"Student not found");
         }
-        const gateLog=await StudentGateLog.findOne({student:student._id});
+        var gateLog=await StudentGateLog.findOne({student:student._id});
         const currentTime = new Date();
-        console.log(gateLog);
-        console.log(currentTime);
+        
+        
         if(!gateLog){
+            console.log("reached");
             gateLog=await StudentGateLog.create({
                 student:student._id,
                 status:"Out",
             });
+            await AllGateLogs.create({
+                student:student._id,
+                status:"Out"
+            });
+            
         }else{
             const lastUpdatedTime = new Date(gateLog.updatedAt);
             const timeDifference = (currentTime - lastUpdatedTime) / (1000 * 60); // Difference in minutes
@@ -37,6 +44,10 @@ const verifyFaces=asyncHandler(async(req,res)=>{
             if (timeDifference >= 1) {
                 // Update the status only if 1 minutes have passed since the last update
                 gateLog.status = gateLog.status === "Out" ? "In" : "Out";
+                const entry=await AllGateLogs.create({
+                    student:student._id,
+                    status:gateLog.status
+                });
                 await gateLog.save(); // This will automatically update the `updatedAt` timestamp
             } else {
                 console.log("reached");

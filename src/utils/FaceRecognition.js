@@ -41,10 +41,7 @@ const compareFaces = async (image1Bytes) => {
 
        
         const faceMetaData = await FaceMetaData.findOne({ registrationNumber: registrationNumber });
-
-        if (!faceMetaData) {
-            return res.status(404).json(new ApiError(404, "No person data found for this face ID"));
-        }
+        if(!faceMetaData) throw new ApiError(404, "No person data found for this face ID")
 
        
         return{name: faceMetaData.name, registrationNumber: faceMetaData.registrationNumber};

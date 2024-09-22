@@ -34,4 +34,5 @@ const registerAdmin = asyncHandler(async (req, res) => {
         .json(new ApiResponse(201, createdAdmin, "Admin registered successfully."));
 });
 
+
 export { registerAdmin };

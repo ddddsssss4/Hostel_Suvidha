@@ -1,7 +1,7 @@
 import cron from 'node-cron';
 import { createExcelReport } from './excelReport.js';
 
-const schedular =()=>{ cron.schedule('28 14 * * *', async () => {
+const schedular =()=>{ cron.schedule('21 23 * * *', async () => {
     try {
         await createExcelReport();  // Ensure you await the async function
         console.log('Excel report created successfully!');

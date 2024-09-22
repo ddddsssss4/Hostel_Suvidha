@@ -16,11 +16,13 @@ import adminRouter from "./routes/admin.route.js";
 import { faceRouter } from "./routes/face.route.js";
 import errorHandler from "./middlewares/error.middlewares.js";
 import { schedular } from "./utils/schedular.js";
+import gateRouter from "./routes/gate.route.js";
 // import the routers
 
 app.use("/api/v1/students",studentRouter)
 app.use("/api/v1/admins",adminRouter)
 app.use("/api/v1/face",faceRouter)
+app.use("/api/v1/gate",gateRouter)
 schedular();
 app.use(errorHandler);
 
