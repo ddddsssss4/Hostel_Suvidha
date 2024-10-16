@@ -1,3 +1,4 @@
+import { Admin } from "../models/admin.models.js";
 import { Student } from "../models/student.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -27,7 +28,8 @@ export const studentVerifyJWT=asyncHandler(async(req,res,next)=>{
 })
 
 const adminVerifyJWT = asyncHandler(async (req, res, next) => {
-    const token = req.cookies.accessToken || req.headers.authorization?.split(" ")[1];
+    const token=req.cookies?.accessToken
+    ||req.header("Authorization")?.replace("Bearer ","")
     if (!token) {
         throw new ApiError(401, "Unauthorized access! ");
     }
