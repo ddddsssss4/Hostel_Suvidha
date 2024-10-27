@@ -33,7 +33,12 @@ const laundrySchema = new mongoose.Schema({
         type: String,
         enum: ['Submitted', 'Accepted', 'Delivered'],
         default: 'Submitted'
-    }
+    },
+    handeledBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Admin',
+        required:true
+    },
     
 },{timestamps:true});
 laundrySchema.virtual('totalClothes').get(function () {

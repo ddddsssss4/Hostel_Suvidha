@@ -2,12 +2,22 @@ import { Laundry } from '../models/laundry.models.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
+import { Admin } from '../models/admin.models.js';
 
 const createLaundryRequest = asyncHandler(async (req, res) => {
     const { tShirts, pants, shirts, lowers, bedsheets } = req.body;
     const student = req.student;
+  
+    const laundryAdmin = await Admin.findOne({
+        adminType: 'LaundryPerson',
+        assignedRooms: req.student.roomNumber
+    });
 
-    if (!tShirts && !pants && !shirts && !lower && !bedsheets) {
+    if (!laundryAdmin) {
+        throw new ApiError(404, "No laundry admin found for the student's room.");
+    }
+
+    if (!tShirts && !pants && !shirts && !lowers && !bedsheets) {
         throw new ApiError(400, "You must specify the number of clothes.");
     }
 
@@ -19,7 +29,8 @@ const createLaundryRequest = asyncHandler(async (req, res) => {
             shirts: shirts || 0,
             lowers: lowers || 0,
             bedsheets: bedsheets || 0
-        }
+        },
+        handeledBy: laundryAdmin._id
     });
 
     await newRequest.save();
@@ -75,6 +86,9 @@ const getStudentLaundryRequests = asyncHandler(async (req, res) => {
 
     res.status(200).json(new ApiResponse(200, laundryRequests, "Laundry requests retrieved successfully."));
 });
+
+
+
 
 
 export { createLaundryRequest, updateLaundryStatus ,getStudentLaundryRequests};
