@@ -50,16 +50,20 @@ const updateLaundryStatusByStudent = asyncHandler(async (req, res) => {
     if (!laundryRequest) {
         throw new ApiError(404, "Laundry request not found.");
     }
-    if (laundryRequest.student._id !== studentId) {
+    //console.log(laundryRequest.student._id, studentId);
+    if (laundryRequest.student._id.toString() !== studentId.toString()) {
         throw new ApiError(403, "Access Denied: You can only update your own laundry request.");
     }
-    // Ensure that cancellation is only possible if the laundry is not yet delivered or closed
+   
     if (status === "Cancelled") {
         if (["Delivered", "Closed"].includes(laundryRequest.status)) {
             throw new ApiError(400, "Cannot cancel a delivered or closed request.");
         }
         laundryRequest.status = "Cancelled";
     } else if (status === "Closed") {
+        if(laundryRequest.status === "Closed"){
+            throw new ApiError(400, "Laundry request is already closed.");
+        } 
         if (laundryRequest.status !== "Delivered") {
             throw new ApiError(400, "Laundry request has not been delivered yet.");
         }
@@ -67,7 +71,8 @@ const updateLaundryStatusByStudent = asyncHandler(async (req, res) => {
     }
 
     await laundryRequest.save();
-    res.status(200).json(new ApiResponse(200, laundryRequest, "Laundry status updated successfully."));
+    const returnRequest = await Laundry.findById(requestId);
+    res.status(200).json(new ApiResponse(200, returnRequest, "Laundry status updated successfully."));
 });
 
 

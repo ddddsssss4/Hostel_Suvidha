@@ -31,7 +31,7 @@ const laundrySchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Submitted', 'AcceptedLaundry', 'Delivered',"AcceptedLaundry", "Ready", "Done", "Delay", "Delivered"],
+        enum: ['Submitted', 'AcceptedLaundry', 'Delivered',"AcceptedLaundry", "Ready", "Done", "Delay", "Delivered","Closed"],
         default: 'Submitted'
     },
     handeledBy: {
