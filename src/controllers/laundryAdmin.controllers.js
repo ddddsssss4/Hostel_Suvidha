@@ -19,27 +19,47 @@ const getStudentsLaundryRequestsSorted = asyncHandler(async (req, res) => {
 }
 );
 
-const updateLaundryStatus = asyncHandler(async (req, res) => {
-    const {'requestId':requestId, 'status':status} = req.body;
-    const laundryAdmin=req.admin;
-    const adminType=req.adminType;
-    if(adminType!=="LaundryAdmin"){
-        throw new ApiError(403,"Access Denied")
+const updateLaundryStatusByLaundryPerson = asyncHandler(async (req, res) => {
+    const { requestId, status } = req.body;
+    const laundryAdmin = req.admin;
+    const adminType = req.adminType;
+
+    // Check if the user is authorized as a laundry person
+    if (adminType !== "LaundryPerson") {
+        throw new ApiError(403, "Access Denied");
     }
-    if(!['Accepted', 'Delivered','Ready'].includes(status)){
-        throw new ApiError(400,"Invalid status value.")
-    }
+
     const laundryRequest = await Laundry.findById(requestId);
-    if(!laundryRequest){
-        throw new ApiError(404,"Laundry request not found.")
+    if (!laundryRequest) {
+        throw new ApiError(404, "Laundry request not found.");
     }
-    laundryRequest.status=status;
+
+    // Define allowed statuses for the laundry person, excluding "Cancelled"
+    const allowedStatuses = ["AcceptedLaundry", "Ready", "Done", "Expected Delivery", "Delay", "Delivered"];
+
+    if (status === "Cancelled") {
+        throw new ApiError(403, "Laundry person cannot cancel the request.");
+    }
+
+    if (laundryRequest.status === "Submitted" && status === "AcceptedLaundry") {
+        laundryRequest.status = status;
+    } else if (laundryRequest.status === "AcceptedLaundry" || allowedStatuses.includes(laundryRequest.status)) {
+        if (status === "Delivered" || allowedStatuses.includes(status)) {
+            laundryRequest.status = status;
+        } else {
+            throw new ApiError(400, "Invalid status transition.");
+        }
+    } else if (laundryRequest.status === "Delivered") {
+        throw new ApiError(400, "Cannot update status. Laundry is already delivered.");
+    } else {
+        throw new ApiError(400, "Invalid status transition.");
+    }
+
     await laundryRequest.save();
-    res.status(200).json(new ApiResponse(200,laundryRequest,"Laundry status updated successfully."))
-}
-);
+    res.status(200).json(new ApiResponse(200, laundryRequest, "Laundry status updated successfully."));
+});
 
 export {
     getStudentsLaundryRequestsSorted,
-    updateLaundryStatus
+    updateLaundryStatusByLaundryPerson
 }

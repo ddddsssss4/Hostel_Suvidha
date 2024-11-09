@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { upload } from "../middlewares/multer.middlewares.js";
-import { changePassword, getComplaints, loginStudent, registerStudent } from "../controllers/student.controller.js";
+import { changePassword, getComplaints, giveFeedback, loginStudent, registerStudent } from "../controllers/student.controller.js";
 import { studentVerifyJWT } from "../middlewares/auth.middleware.js";
-import { createLaundryRequest, getStudentLaundryRequests, updateLaundryStatus } from "../controllers/laundry.controllers.js";
+import { createLaundryRequest, getStudentLaundryRequests, updateLaundryStatusByStudent } from "../controllers/laundry.controllers.js";
 import { newComplaint } from "../controllers/complaint.controller.js";
 
 
@@ -30,7 +30,7 @@ studentRouter.route('/laundry').post(
 )
 studentRouter.route('/updateLaundryStatus').post(
     studentVerifyJWT,
-    updateLaundryStatus
+    updateLaundryStatusByStudent
 )
 studentRouter.route('/getLaundryRequests').get(
     studentVerifyJWT,
@@ -41,5 +41,8 @@ studentRouter.route('/newComplaint').post(
 );
 studentRouter.route('/allComplaints').get(
     studentVerifyJWT,getComplaints
+);
+studentRouter.route('/giveFeedback').post(
+    studentVerifyJWT,giveFeedback
 );
 export default studentRouter;

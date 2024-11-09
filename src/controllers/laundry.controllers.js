@@ -38,22 +38,35 @@ const createLaundryRequest = asyncHandler(async (req, res) => {
     res.status(201).json(new ApiResponse(201, newRequest, "Laundry request created successfully."));
 });
 
-const updateLaundryStatus = asyncHandler(async (req, res) => {
+const updateLaundryStatusByStudent = asyncHandler(async (req, res) => {
     const { requestId, status } = req.body;
-
-    if (!['Submitted', 'Accepted', 'Delivered'].includes(status)) {
-        throw new ApiError(400, "Invalid status value.");
+    const studentId = req.student._id;
+    // Only allow specific status updates for students, including "Closed" and "Cancelled"
+    if (!['Closed', 'Cancelled'].includes(status)) {
+        throw new ApiError(400, "Invalid status value for student.");
     }
 
-    const laundryRequest = await Laundry.findById(requestId);
-
+    const laundryRequest = await Laundry.findById(requestId).populate("student");
     if (!laundryRequest) {
         throw new ApiError(404, "Laundry request not found.");
     }
+    if (laundryRequest.student._id !== studentId) {
+        throw new ApiError(403, "Access Denied: You can only update your own laundry request.");
+    }
+    // Ensure that cancellation is only possible if the laundry is not yet delivered or closed
+    if (status === "Cancelled") {
+        if (["Delivered", "Closed"].includes(laundryRequest.status)) {
+            throw new ApiError(400, "Cannot cancel a delivered or closed request.");
+        }
+        laundryRequest.status = "Cancelled";
+    } else if (status === "Closed") {
+        if (laundryRequest.status !== "Delivered") {
+            throw new ApiError(400, "Laundry request has not been delivered yet.");
+        }
+        laundryRequest.status = "Closed";
+    }
 
-    laundryRequest.status = status;
     await laundryRequest.save();
-
     res.status(200).json(new ApiResponse(200, laundryRequest, "Laundry status updated successfully."));
 });
 
@@ -91,4 +104,4 @@ const getStudentLaundryRequests = asyncHandler(async (req, res) => {
 
 
 
-export { createLaundryRequest, updateLaundryStatus ,getStudentLaundryRequests};
+export { createLaundryRequest, updateLaundryStatusByStudent ,getStudentLaundryRequests};

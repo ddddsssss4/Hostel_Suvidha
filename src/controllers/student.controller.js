@@ -5,6 +5,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { Student } from "../models/student.models.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { Complaint } from "../models/complaints.models.js";
+import mongoose from "mongoose";
 
 //register form is required by the developer to add the student in the databse easily as we will not give the user to register on the apploication it is only login
 const registerStudent=asyncHandler(async(req,res)=>{
@@ -145,4 +146,24 @@ const getComplaints=asyncHandler(async(req,res)=>{
 
 });
 
-export {registerStudent,loginStudent,changePassword,getComplaints}
+const giveFeedback=asyncHandler(async(req,res)=>{
+  const student=req.student;
+  const {complaintId,feedback}=req.body;
+    if(!complaintId||!feedback){
+        throw new ApiError(400,"Complaint Id and Feedback are required");
+    }
+    
+    const complaint=await Complaint.findById(mongoose.Types.ObjectId.createFromHexString(complaintId));
+    if(complaint.submittedBy.toString()!==student._id.toString()){
+        throw new ApiError(403,"You are not allowed to give feedback for this complaint");
+    }
+    if(!complaint.status==="Resolved"){
+        throw new ApiError(400,"Complaint is not resolved yet");
+    }
+    
+    complaint.feedback=feedback;
+    complaint.status="Closed";
+    await complaint.save();
+    return res.status(200).json(new ApiResponse(200,complaint,"Feedback Submitted Successfully!"));
+})
+export {registerStudent,loginStudent,changePassword,getComplaints,giveFeedback}
